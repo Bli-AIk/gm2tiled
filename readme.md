@@ -1,6 +1,6 @@
 # gm2tiled
 
-[![license](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE) <img src="https://img.shields.io/github/repo-size/Bli_AIk/gm2tiled.svg"/> <img src="https://img.shields.io/github/last-commit/Bli_AIk/gm2tiled.svg"/> <br>
+[![license](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE) <img src="https://img.shields.io/github/repo-size/Bli-AIk/gm2tiled.svg"/> <img src="https://img.shields.io/github/last-commit/Bli-AIk/gm2tiled.svg"/> <br>
 <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" />
 
 > Current Status: 🚧 Early Development (Initial version in progress)
@@ -62,7 +62,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Bli_AIk/gm2tiled.git
+   git clone https://github.com/Bli-AIk/gm2tiled.git
    cd gm2tiled
    ```
 
@@ -103,7 +103,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Bli_AIk/gm2tiled.git
+   git clone https://github.com/Bli-AIk/gm2tiled.git
    cd gm2tiled
    ```
 
