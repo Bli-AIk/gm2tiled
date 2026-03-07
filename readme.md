@@ -30,6 +30,13 @@ an open-source GameMaker reverse-engineering toolkit. Huge thanks to all UTMT co
 incredible work on documenting and implementing the GameMaker data formats that make this project
 possible.
 
+The output format targets [Tiled](https://www.mapeditor.org/) — a powerful and free open-source map
+editor. Thanks to the Tiled team and community for building and maintaining such a great tool.
+
+The room and tileset structure was also informed by the official
+[GameMaker Tiled Importer/Exporter](https://github.com/YoYoGames/GMTK-2024) and community resources
+on GameMaker's room format.
+
 ## Features
 
 * Supports **GMS1** (`data.win` v14, e.g. Undertale) and **GMS2** (`data.win` v17, e.g. Deltarune)
