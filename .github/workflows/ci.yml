@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches-ignore:
+      - main
   pull_request:
     branches: [ main ]
 
@@ -16,7 +17,7 @@ permissions:
 jobs:
   test:
     name: Test
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && hashFiles('Cargo.toml') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,7 +57,7 @@ jobs:
 
   deny:
     name: Cargo Deny
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && hashFiles('Cargo.toml') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,7 +68,7 @@ jobs:
 
   security:
     name: Security Audit
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && hashFiles('Cargo.toml') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
