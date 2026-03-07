@@ -9,8 +9,8 @@ use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, Event};
 use crate::model::Tileset;
 
 pub fn write_tsx(tileset: &Tileset, output_path: &Path) -> anyhow::Result<()> {
-    let file = File::create(output_path)
-        .with_context(|| format!("Failed to create {output_path:?}"))?;
+    let file =
+        File::create(output_path).with_context(|| format!("Failed to create {output_path:?}"))?;
     let buf = BufWriter::new(file);
     let mut w = Writer::new_with_indent(buf, b' ', 2);
 

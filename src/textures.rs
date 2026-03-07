@@ -13,7 +13,8 @@ pub fn crop_background(
     src_height: u32,
 ) -> anyhow::Result<DynamicImage> {
     let texture_path = texture_dir.join(format!("{texture_page_index}.png"));
-    let img = image::open(&texture_path)
-        .with_context(|| format!("Failed to open texture page {texture_page_index}: {texture_path:?}"))?;
+    let img = image::open(&texture_path).with_context(|| {
+        format!("Failed to open texture page {texture_page_index}: {texture_path:?}")
+    })?;
     Ok(img.crop_imm(src_x, src_y, src_width, src_height))
 }

@@ -9,8 +9,8 @@ use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use crate::model::{Layer, MapObject, ObjectLayer, TileLayer, TiledMap};
 
 pub fn write_tmx(map: &TiledMap, output_path: &Path) -> anyhow::Result<()> {
-    let file = File::create(output_path)
-        .with_context(|| format!("Failed to create {output_path:?}"))?;
+    let file =
+        File::create(output_path).with_context(|| format!("Failed to create {output_path:?}"))?;
     let buf = BufWriter::new(file);
     let mut w = Writer::new_with_indent(buf, b' ', 2);
 
@@ -104,7 +104,10 @@ fn write_tile_layer<W: std::io::Write>(w: &mut Writer<W>, layer: &TileLayer) -> 
     Ok(())
 }
 
-fn write_object_layer<W: std::io::Write>(w: &mut Writer<W>, layer: &ObjectLayer) -> anyhow::Result<()> {
+fn write_object_layer<W: std::io::Write>(
+    w: &mut Writer<W>,
+    layer: &ObjectLayer,
+) -> anyhow::Result<()> {
     let id = layer.id.to_string();
     let mut elem = BytesStart::new("objectgroup");
     elem.push_attribute(("id", id.as_str()));
