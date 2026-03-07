@@ -234,12 +234,12 @@ fn build_sprite_tileset_map(
 fn collect_used_backgrounds(room: &RoomData) -> Vec<String> {
     let mut used: Vec<String> = Vec::new();
     for tile in &room.tiles {
-        if !used.contains(&tile.background) {
+        if !tile.background.is_empty() && !used.contains(&tile.background) {
             used.push(tile.background.clone());
         }
     }
     for layer in &room.gms2_tile_layers {
-        if !used.contains(&layer.background) {
+        if !layer.background.is_empty() && !used.contains(&layer.background) {
             used.push(layer.background.clone());
         }
     }
@@ -409,6 +409,9 @@ fn build_gms2_layers(
 
     let mut layers = Vec::new();
     for gms2_layer in sorted {
+        if gms2_layer.background.is_empty() {
+            continue;
+        }
         let info = tileset_map
             .get(&gms2_layer.background)
             .with_context(|| format!("Tileset '{}' not found", gms2_layer.background))?;
