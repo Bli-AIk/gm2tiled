@@ -33,9 +33,9 @@ possible.
 The output format targets [Tiled](https://www.mapeditor.org/) — a powerful and free open-source map
 editor. Thanks to the Tiled team and community for building and maintaining such a great tool.
 
-The room and tileset structure was also informed by the official
-[GameMaker Tiled Importer/Exporter](https://github.com/YoYoGames/GMTK-2024) and community resources
-on GameMaker's room format.
+The room and tileset structure was also informed by the official GameMaker plugins for Tiled:
+[GMS2 `.yy` plugin](https://github.com/mapeditor/tiled/tree/master/src/plugins/yy) and
+[GMS1 `.gmx` plugin](https://github.com/mapeditor/tiled/tree/master/src/plugins/gmx).
 
 ## Features
 
