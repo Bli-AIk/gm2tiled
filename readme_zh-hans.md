@@ -28,6 +28,13 @@
 UTMT 是一个开源的 GameMaker 逆向工程工具集。衷心感谢所有 UTMT 贡献者的卓越工作——
 正是他们对 GameMaker 数据格式的记录和实现，使本项目得以成为可能。
 
+输出格式面向 [Tiled](https://www.mapeditor.org/)——一款强大的免费开源地图编辑器。
+感谢 Tiled 团队和社区构建并维护了如此优秀的工具。
+
+房间和瓦片集的结构也参考了官方的
+[GameMaker Tiled 导入/导出插件](https://github.com/YoYoGames/GMTK-2024)
+以及社区中关于 GameMaker 房间格式的相关资料。
+
 ## 功能
 
 * 支持 **GMS1**（`data.win` v14，如 Undertale）和 **GMS2**（`data.win` v17，如 Deltarune）
