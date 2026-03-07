@@ -31,9 +31,9 @@ UTMT 是一个开源的 GameMaker 逆向工程工具集。衷心感谢所有 UTM
 输出格式面向 [Tiled](https://www.mapeditor.org/)——一款强大的免费开源地图编辑器。
 感谢 Tiled 团队和社区构建并维护了如此优秀的工具。
 
-房间和瓦片集的结构也参考了官方的
-[GameMaker Tiled 导入/导出插件](https://github.com/YoYoGames/GMTK-2024)
-以及社区中关于 GameMaker 房间格式的相关资料。
+房间和瓦片集的结构也参考了 Tiled 的官方 GameMaker 插件：
+[GMS2 `.yy` 插件](https://github.com/mapeditor/tiled/tree/master/src/plugins/yy) 和
+[GMS1 `.gmx` 插件](https://github.com/mapeditor/tiled/tree/master/src/plugins/gmx)。
 
 ## 功能
 
