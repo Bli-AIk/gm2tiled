@@ -2,6 +2,7 @@
 name = "gm2tiled"
 version = "0.1.0"
 edition = "2024"
+license = "GPL-3.0-or-later"
 description = "Convert GameMaker 1.x/2.x data.win tilemaps to Tiled .tmx projects"
 
 [[bin]]

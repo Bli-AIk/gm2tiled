@@ -14,13 +14,9 @@ pub struct BackgroundDef {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RoomData {
-    pub name: String,
     pub width: u32,
     pub height: u32,
     pub speed: u32,
-    pub persistent: bool,
-    pub grid_width: u32,
-    pub grid_height: u32,
     pub background_color: u32,
     pub draw_background_color: bool,
     #[serde(default)]
@@ -44,10 +40,6 @@ pub struct TileData {
     pub height: u32,
     pub depth: i32,
     pub background: String,
-    pub scale_x: f32,
-    pub scale_y: f32,
-    pub color: u32,
-    pub instance_id: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -56,10 +48,6 @@ pub struct GameObjectData {
     pub x: i32,
     pub y: i32,
     pub object_name: String,
-    pub scale_x: f32,
-    pub scale_y: f32,
-    pub rotation: f32,
-    pub color: u32,
     pub instance_id: u32,
     #[serde(default = "neg_one_i32")]
     pub sprite_page: i32,
@@ -93,10 +81,6 @@ pub struct ViewData {
     pub port_y: i32,
     pub port_width: u32,
     pub port_height: u32,
-    pub border_x: i32,
-    pub border_y: i32,
-    pub speed_x: i32,
-    pub speed_y: i32,
 }
 
 #[derive(Debug, Deserialize)]

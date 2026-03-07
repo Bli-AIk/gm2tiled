@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use anyhow::Context;
 
 use crate::model::{
-    InstanceObject, Layer, MapObject, ObjectLayer, TileLayer, Tileset, TileObjectData, TilesetRef,
-    TiledMap, ViewObject,
+    InstanceObject, Layer, MapObject, ObjectLayer, TileLayer, TileObjectData, TiledMap, Tileset,
+    TilesetRef, ViewObject,
 };
 use crate::schema::{BackgroundDef, Gms2TileLayer, RoomData, TileData};
 
@@ -16,9 +16,6 @@ struct TilesetInfo {
     tile_count: u32,
     source_width: u32,
     source_height: u32,
-    texture_page_index: usize,
-    source_x: u32,
-    source_y: u32,
     name: String,
 }
 
@@ -63,7 +60,15 @@ pub fn convert_room(
     let mut obj_id: u32 = 1;
     let mut layers = Vec::new();
 
-    layers.extend(build_gms1_layers(room, &tileset_map, map_w, map_h, tile_size, &mut layer_id, &mut obj_id));
+    layers.extend(build_gms1_layers(
+        room,
+        &tileset_map,
+        map_w,
+        map_h,
+        tile_size,
+        &mut layer_id,
+        &mut obj_id,
+    ));
     layers.extend(build_gms2_layers(room, &tileset_map, &mut layer_id)?);
 
     if let Some(l) = build_objects_layer(room, &sprite_tileset_map, &mut layer_id, &mut obj_id) {
@@ -80,13 +85,10 @@ pub fn convert_room(
         .then(|| argb_to_hex(room.background_color));
 
     let tiled_map = TiledMap {
-        name: room.name.clone(),
         width_tiles: map_w,
         height_tiles: map_h,
         tile_width: tile_size,
         tile_height: tile_size,
-        pixel_width: room.width,
-        pixel_height: room.height,
         background_color,
         tilesets: tileset_refs,
         layers,
@@ -115,7 +117,6 @@ fn build_tileset_lists(
     for info in sorted_bg {
         refs.push(TilesetRef {
             first_gid: info.first_gid,
-            name: info.name.clone(),
             tsx_path: format!("tilesets/{}.tsx", info.name),
         });
         tilesets.push(Tileset {
@@ -133,7 +134,6 @@ fn build_tileset_lists(
     for info in sorted_spr {
         refs.push(TilesetRef {
             first_gid: info.first_gid,
-            name: info.name.clone(),
             tsx_path: format!("tilesets/{}.tsx", info.name),
         });
         tilesets.push(Tileset {
@@ -189,9 +189,6 @@ fn build_tileset_map(
                 tile_count,
                 source_width: bg_def.source_width,
                 source_height: bg_def.source_height,
-                texture_page_index: bg_def.texture_page_index,
-                source_x: bg_def.source_x,
-                source_y: bg_def.source_y,
                 name: bg_name.clone(),
             },
         );
@@ -202,7 +199,10 @@ fn build_tileset_map(
     Ok(tileset_map)
 }
 
-fn build_sprite_tileset_map(room: &RoomData, mut next_gid: u32) -> HashMap<String, SpriteTilesetInfo> {
+fn build_sprite_tileset_map(
+    room: &RoomData,
+    mut next_gid: u32,
+) -> HashMap<String, SpriteTilesetInfo> {
     let mut sprite_map = HashMap::new();
     for obj in &room.game_objects {
         if obj.sprite_page < 0
@@ -281,8 +281,8 @@ fn is_grid_aligned(tile: &TileData, tile_size: u32) -> bool {
         && tile.height == tile_size
         && tile.x >= 0
         && tile.y >= 0
-        && tile.x as u32 % tile_size == 0
-        && tile.y as u32 % tile_size == 0
+        && (tile.x as u32).is_multiple_of(tile_size)
+        && (tile.y as u32).is_multiple_of(tile_size)
 }
 
 fn build_gms1_layers(
@@ -316,7 +316,8 @@ fn build_gms1_layers(
             .collect();
 
         if !grid.is_empty() {
-            let tl = build_tile_layer_gms1(&grid, tileset_map, map_w, map_h, tile_size, depth, layer_id);
+            let tl =
+                build_tile_layer_gms1(&grid, tileset_map, map_w, map_h, tile_size, depth, layer_id);
             layers.push(Layer::Tile(tl));
         }
         if !free.is_empty() {
@@ -353,7 +354,13 @@ fn build_tile_layer_gms1(
     }
     let id = *layer_id;
     *layer_id += 1;
-    TileLayer { id, name: format!("depth_{depth}"), width: map_w, height: map_h, data }
+    TileLayer {
+        id,
+        name: format!("depth_{depth}"),
+        width: map_w,
+        height: map_h,
+        data,
+    }
 }
 
 fn build_object_layer_tiles(
@@ -385,7 +392,11 @@ fn build_object_layer_tiles(
     }
     let id = *layer_id;
     *layer_id += 1;
-    ObjectLayer { id, name: format!("depth_{depth}_tiles"), objects }
+    ObjectLayer {
+        id,
+        name: format!("depth_{depth}_tiles"),
+        objects,
+    }
 }
 
 fn build_gms2_layers(
@@ -432,7 +443,13 @@ fn build_gms2_tile_layer(
 
     let id = *layer_id;
     *layer_id += 1;
-    TileLayer { id, name: gms2_layer.name.clone(), width: w, height: h, data }
+    TileLayer {
+        id,
+        name: gms2_layer.name.clone(),
+        width: w,
+        height: h,
+        data,
+    }
 }
 
 fn build_objects_layer(
@@ -465,23 +482,20 @@ fn build_objects_layer(
             y,
             width,
             height,
-            scale_x: obj.scale_x,
-            scale_y: obj.scale_y,
-            rotation: obj.rotation,
             instance_id: obj.instance_id,
             gid,
         }));
     }
     let id = *layer_id;
     *layer_id += 1;
-    Some(Layer::Object(ObjectLayer { id, name: "objects".to_string(), objects }))
+    Some(Layer::Object(ObjectLayer {
+        id,
+        name: "objects".to_string(),
+        objects,
+    }))
 }
 
-fn build_views_layer(
-    room: &RoomData,
-    layer_id: &mut u32,
-    obj_id: &mut u32,
-) -> Option<Layer> {
+fn build_views_layer(room: &RoomData, layer_id: &mut u32, obj_id: &mut u32) -> Option<Layer> {
     let enabled: Vec<_> = room.views.iter().filter(|v| v.enabled).collect();
     if enabled.is_empty() {
         return None;
@@ -504,7 +518,11 @@ fn build_views_layer(
     }
     let id = *layer_id;
     *layer_id += 1;
-    Some(Layer::Object(ObjectLayer { id, name: "views".to_string(), objects }))
+    Some(Layer::Object(ObjectLayer {
+        id,
+        name: "views".to_string(),
+        objects,
+    }))
 }
 
 fn argb_to_hex(color: u32) -> String {

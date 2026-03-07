@@ -1,11 +1,8 @@
 pub struct TiledMap {
-    pub name: String,
     pub width_tiles: u32,
     pub height_tiles: u32,
     pub tile_width: u32,
     pub tile_height: u32,
-    pub pixel_width: u32,
-    pub pixel_height: u32,
     pub background_color: Option<String>,
     pub tilesets: Vec<TilesetRef>,
     pub layers: Vec<Layer>,
@@ -16,7 +13,6 @@ pub struct TiledMap {
 
 pub struct TilesetRef {
     pub first_gid: u32,
-    pub name: String,
     pub tsx_path: String,
 }
 
@@ -52,9 +48,6 @@ pub struct InstanceObject {
     pub y: f32,
     pub width: f32,
     pub height: f32,
-    pub scale_x: f32,
-    pub scale_y: f32,
-    pub rotation: f32,
     pub instance_id: u32,
     pub gid: Option<u32>,
 }

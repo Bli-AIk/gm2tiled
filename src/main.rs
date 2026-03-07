@@ -43,7 +43,13 @@ fn main() -> anyhow::Result<()> {
     let textures_dir = cli.output.join("textures");
     let sprites_dir = cli.output.join("sprites");
 
-    for dir in [&cli.output, &extract_dir, &tilesets_dir, &textures_dir, &sprites_dir] {
+    for dir in [
+        &cli.output,
+        &extract_dir,
+        &tilesets_dir,
+        &textures_dir,
+        &sprites_dir,
+    ] {
         std::fs::create_dir_all(dir)?;
     }
 
@@ -75,12 +81,12 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn find_scripts_dir(_data_win: &Path) -> anyhow::Result<PathBuf> {
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(exe_dir) = exe.parent() {
-            let candidate = exe_dir.join("scripts");
-            if candidate.join("extract_data.csx").exists() {
-                return Ok(candidate);
-            }
+    if let Ok(exe) = std::env::current_exe()
+        && let Some(exe_dir) = exe.parent()
+    {
+        let candidate = exe_dir.join("scripts");
+        if candidate.join("extract_data.csx").exists() {
+            return Ok(candidate);
         }
     }
 
@@ -128,7 +134,8 @@ fn convert_one_room(
 
     crop_and_save_textures(&used_bgs, backgrounds, extract_dir, textures_dir)?;
 
-    let (tiled_map, tilesets, sprite_sources) = convert::convert_room(&room, backgrounds, tile_size)?;
+    let (tiled_map, tilesets, sprite_sources) =
+        convert::convert_room(&room, backgrounds, tile_size)?;
 
     crop_and_save_sprites(&sprite_sources, extract_dir, sprites_dir)?;
 
