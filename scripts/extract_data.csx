@@ -53,6 +53,33 @@ for (int i = 0; i < Data.Backgrounds.Count; i++)
         sourceHeight = (int)bg.Texture.SourceHeight
     });
 }
+
+// GMS2 compat: tile tilesets are stored as sprites named "bg_*" (not in Data.Backgrounds)
+var existingBgNames = new HashSet<string>();
+foreach (var entry in bgList) {
+    existingBgNames.Add(((dynamic)entry).name);
+}
+foreach (var spr in Data.Sprites)
+{
+    string sprName = spr.Name?.Content ?? "";
+    if (!sprName.StartsWith("bg_")) continue;
+    if (existingBgNames.Contains(sprName)) continue;
+    if (spr.Textures == null || spr.Textures.Count == 0) continue;
+    var tex = spr.Textures[0]?.Texture;
+    if (tex == null) continue;
+    int pageIndex = Data.EmbeddedTextures.IndexOf(tex.TexturePage);
+    if (pageIndex < 0) continue;
+    bgList.Add(new
+    {
+        name = sprName,
+        texturePageIndex = pageIndex,
+        sourceX = (int)tex.SourceX,
+        sourceY = (int)tex.SourceY,
+        sourceWidth = (int)tex.SourceWidth,
+        sourceHeight = (int)tex.SourceHeight
+    });
+}
+
 File.WriteAllText(
     Path.Combine(outDir, "backgrounds.json"),
     JsonSerializer.Serialize(bgList, jsonOptions)
@@ -152,7 +179,9 @@ foreach (var room in Data.Rooms)
                         width = tile.Width,
                         height = tile.Height,
                         depth = tile.TileDepth,
-                        background = tile.BackgroundDefinition?.Name?.Content ?? "",
+                        background = tile.BackgroundDefinition?.Name?.Content
+                                     ?? tile.SpriteDefinition?.Name?.Content
+                                     ?? "",
                         scaleX = tile.ScaleX,
                         scaleY = tile.ScaleY,
                         color = tile.Color,
