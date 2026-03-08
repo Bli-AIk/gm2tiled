@@ -9,6 +9,11 @@ pub struct BackgroundDef {
     pub source_y: u32,
     pub source_width: u32,
     pub source_height: u32,
+    /// GMS2 tile dimensions stored in the Background resource (0 = not a GMS2 tileset)
+    #[serde(default)]
+    pub gms2_tile_width: u32,
+    #[serde(default)]
+    pub gms2_tile_height: u32,
 }
 
 #[derive(Debug, Deserialize)]
