@@ -50,7 +50,9 @@ for (int i = 0; i < Data.Backgrounds.Count; i++)
         sourceX = (int)bg.Texture.SourceX,
         sourceY = (int)bg.Texture.SourceY,
         sourceWidth = (int)bg.Texture.SourceWidth,
-        sourceHeight = (int)bg.Texture.SourceHeight
+        sourceHeight = (int)bg.Texture.SourceHeight,
+        gms2TileWidth = (int)bg.GMS2TileWidth,
+        gms2TileHeight = (int)bg.GMS2TileHeight
     });
 }
 

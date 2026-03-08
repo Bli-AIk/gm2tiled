@@ -252,14 +252,9 @@ fn determine_tile_dims(
     bg_def: &BackgroundDef,
     tile_size: u32,
 ) -> (u32, u32) {
-    for layer in &room.gms2_tile_layers {
-        if layer.background == bg_name && layer.tiles_x > 0 && layer.tiles_y > 0 {
-            let tw = bg_def.source_width / layer.tiles_x;
-            let th = bg_def.source_height / layer.tiles_y;
-            if tw > 0 && th > 0 {
-                return (tw, th);
-            }
-        }
+    // GMS2 backgrounds carry their own tile dimensions.
+    if bg_def.gms2_tile_width > 0 && bg_def.gms2_tile_height > 0 {
+        return (bg_def.gms2_tile_width, bg_def.gms2_tile_height);
     }
     determine_tile_dims_gms1(bg_name, room, tile_size)
 }
