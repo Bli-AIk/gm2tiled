@@ -26,26 +26,32 @@ rm -f "$summary_csv"
 
 first_csv=1
 for dataset in "${datasets[@]}"; do
+    tile_size="${TILE_SIZE_OVERRIDE:-}"
     case "$dataset" in
         undertale)
             input="test_sources/undertale/data.win"
             output="test_output/undertale"
+            : "${tile_size:=20}"
             ;;
         deltarune_ch1)
             input="test_sources/deltarune/ch1.win"
             output="test_output/deltarune_ch1"
+            : "${tile_size:=40}"
             ;;
         deltarune_ch2)
             input="test_sources/deltarune/ch2.win"
             output="test_output/deltarune_ch2"
+            : "${tile_size:=40}"
             ;;
         deltarune_ch3)
             input="test_sources/deltarune/ch3.win"
             output="test_output/deltarune_ch3"
+            : "${tile_size:=40}"
             ;;
         deltarune_ch4)
             input="test_sources/deltarune/ch4.win"
             output="test_output/deltarune_ch4"
+            : "${tile_size:=40}"
             ;;
         *)
             echo "Unknown dataset: $dataset" >&2
@@ -58,6 +64,7 @@ for dataset in "${datasets[@]}"; do
         --output "$output" \
         --dataset "$dataset" \
         --gm2tiled-bin "$gm2tiled_bin" \
+        --tile-size "$tile_size" \
         "${skip_export_flag[@]}"
 
     dataset_csv="$output/pixel_diff.csv"

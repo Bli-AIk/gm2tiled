@@ -8,6 +8,11 @@ use crate::model::{
 };
 use crate::schema::{BackgroundDef, Gms2TileLayer, RoomData, TileData};
 
+#[path = "convert_detection.rs"]
+mod detection;
+
+pub use detection::detect_room_tile_size;
+
 struct TilesetInfo {
     first_gid: u32,
     tile_width: u32,
@@ -103,7 +108,13 @@ pub fn convert_room(
         &mut layer_id,
         &mut obj_id,
     ));
-    layers.extend(build_gms2_layers(room, &tileset_map, &mut layer_id)?);
+    layers.extend(build_gms2_layers(
+        room,
+        &tileset_map,
+        tile_size,
+        &mut layer_id,
+        &mut obj_id,
+    )?);
 
     if let Some(l) = build_objects_layer(room, &sprite_tileset_map, &mut layer_id, &mut obj_id) {
         layers.push(l);
@@ -393,15 +404,26 @@ fn determine_tile_dims(
 }
 
 fn determine_tile_dims_gms1(bg_name: &str, room: &RoomData, tile_size: u32) -> (u32, u32) {
-    let mut counts: HashMap<(u32, u32), usize> = HashMap::new();
-    for tile in room.tiles.iter().filter(|t| t.background == bg_name) {
-        *counts.entry((tile.width, tile.height)).or_insert(0) += 1;
+    let mut dims = room.tiles.iter().filter(|tile| tile.background == bg_name);
+    let Some(first) = dims.next() else {
+        return (tile_size, tile_size);
+    };
+
+    let mut tile_size = first.width.max(1);
+    for tile in dims {
+        tile_size = gcd(tile_size, tile.width.max(1));
     }
-    counts
-        .into_iter()
-        .max_by_key(|(_, c)| *c)
-        .map(|(dims, _)| dims)
-        .unwrap_or((tile_size, tile_size))
+
+    (tile_size, tile_size)
+}
+
+fn gcd(mut left: u32, mut right: u32) -> u32 {
+    while right != 0 {
+        let remainder = left % right;
+        left = right;
+        right = remainder;
+    }
+    left.max(1)
 }
 
 fn is_grid_aligned(tile: &TileData, tile_size: u32) -> bool {
@@ -611,7 +633,9 @@ fn build_object_layer_tiles(
 fn build_gms2_layers(
     room: &RoomData,
     tileset_map: &HashMap<String, TilesetInfo>,
+    map_tile_size: u32,
     layer_id: &mut u32,
+    obj_id: &mut u32,
 ) -> anyhow::Result<Vec<Layer>> {
     let mut sorted: Vec<&Gms2TileLayer> = room.gms2_tile_layers.iter().collect();
     sorted.sort_by(|a, b| b.depth.cmp(&a.depth));
@@ -624,8 +648,13 @@ fn build_gms2_layers(
         let info = tileset_map
             .get(&gms2_layer.background)
             .with_context(|| format!("Tileset '{}' not found", gms2_layer.background))?;
-        let tl = build_gms2_tile_layer(gms2_layer, info, layer_id);
-        layers.push(Layer::Tile(tl));
+        if info.tile_width == map_tile_size && info.tile_height == map_tile_size {
+            let tl = build_gms2_tile_layer(gms2_layer, info, layer_id);
+            layers.push(Layer::Tile(tl));
+        } else {
+            let ol = build_gms2_object_layer(gms2_layer, info, layer_id, obj_id);
+            layers.push(Layer::Object(ol));
+        }
     }
     Ok(layers)
 }
@@ -661,6 +690,44 @@ fn build_gms2_tile_layer(
         width: w,
         height: h,
         data,
+    }
+}
+
+fn build_gms2_object_layer(
+    gms2_layer: &Gms2TileLayer,
+    info: &TilesetInfo,
+    layer_id: &mut u32,
+    obj_id: &mut u32,
+) -> ObjectLayer {
+    let mut objects = Vec::new();
+
+    for (row_idx, row) in gms2_layer.tile_data.iter().enumerate() {
+        for (col_idx, &raw) in row.iter().enumerate() {
+            if raw == 0 {
+                continue;
+            }
+
+            let tile_idx = raw & 0x7_FFFF;
+            let gid = info.first_gid + tile_idx;
+            let id = *obj_id;
+            *obj_id += 1;
+            objects.push(MapObject::TileObject(TileObjectData {
+                id,
+                gid,
+                x: col_idx as f32 * info.tile_width as f32,
+                y: row_idx as f32 * info.tile_height as f32 + info.tile_height as f32,
+                width: info.tile_width as f32,
+                height: info.tile_height as f32,
+            }));
+        }
+    }
+
+    let id = *layer_id;
+    *layer_id += 1;
+    ObjectLayer {
+        id,
+        name: format!("{}_objects", gms2_layer.name),
+        objects,
     }
 }
 

@@ -166,6 +166,7 @@ fn convert_one_room(
     tile_size: u32,
 ) -> anyhow::Result<()> {
     let room = extract::load_room(extract_dir, room_name)?;
+    let tile_size = convert::detect_room_tile_size(&room, backgrounds, tile_size);
 
     let mut used_bgs: Vec<String> = Vec::new();
     for tile in &room.tiles {

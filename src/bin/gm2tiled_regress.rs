@@ -177,6 +177,7 @@ fn process_room(
     region_cache: &mut render::RegionCache,
 ) -> anyhow::Result<CsvRow> {
     let room = extract::load_room(extract_dir, room_name)?;
+    let tile_size = convert::detect_room_tile_size(&room, backgrounds, tile_size);
     let (reference_image, reference_stats) =
         render::render_reference_room_static(&room, backgrounds, texture_cache, region_cache)?;
     let (tiled_map, tilesets, _, _) = convert::convert_room(&room, backgrounds, tile_size)?;
