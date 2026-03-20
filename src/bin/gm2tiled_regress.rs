@@ -179,11 +179,10 @@ fn process_room(
     let room = extract::load_room(extract_dir, room_name)?;
     let (reference_image, reference_stats) =
         render::render_reference_room_static(&room, backgrounds, texture_cache, region_cache)?;
-    let (tiled_map, tilesets, _) = convert::convert_room(&room, backgrounds, tile_size)?;
+    let (tiled_map, tilesets, _, _) = convert::convert_room(&room, backgrounds, tile_size)?;
     let rendered_image = render::render_tiled_map_static(
         &tiled_map,
         &tilesets,
-        backgrounds,
         room.width,
         room.height,
         texture_cache,

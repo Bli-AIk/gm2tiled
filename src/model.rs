@@ -82,4 +82,10 @@ pub struct Tileset {
     pub image_height: u32,
     pub columns: u32,
     pub tile_count: u32,
+    #[allow(dead_code)]
+    pub source_texture_page_index: usize,
+    #[allow(dead_code)]
+    pub source_x: u32,
+    #[allow(dead_code)]
+    pub source_y: u32,
 }

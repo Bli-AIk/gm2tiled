@@ -46,6 +46,7 @@ fn main() -> anyhow::Result<()> {
     let tilesets_dir = cli.output.join("tilesets");
     let textures_dir = cli.output.join("textures");
     let sprites_dir = cli.output.join("sprites");
+    let tile_objects_dir = cli.output.join("tile_objects");
     let sprite_catalog_dir = cli.output.join("sprite_catalog");
 
     for dir in [
@@ -54,6 +55,7 @@ fn main() -> anyhow::Result<()> {
         &tilesets_dir,
         &textures_dir,
         &sprites_dir,
+        &tile_objects_dir,
     ] {
         std::fs::create_dir_all(dir)?;
     }
@@ -89,6 +91,7 @@ fn main() -> anyhow::Result<()> {
             &textures_dir,
             &tilesets_dir,
             &sprites_dir,
+            &tile_objects_dir,
             cli.tile_size,
         )?;
     }
@@ -159,6 +162,7 @@ fn convert_one_room(
     textures_dir: &Path,
     tilesets_dir: &Path,
     sprites_dir: &Path,
+    tile_objects_dir: &Path,
     tile_size: u32,
 ) -> anyhow::Result<()> {
     let room = extract::load_room(extract_dir, room_name)?;
@@ -177,10 +181,11 @@ fn convert_one_room(
 
     crop_and_save_textures(&used_bgs, backgrounds, texture_cache, textures_dir)?;
 
-    let (tiled_map, tilesets, sprite_sources) =
+    let (tiled_map, tilesets, sprite_sources, free_tile_sources) =
         convert::convert_room(&room, backgrounds, tile_size)?;
 
-    crop_and_save_sprites(&sprite_sources, texture_cache, sprites_dir)?;
+    crop_and_save_cropped_images(&sprite_sources, texture_cache, sprites_dir)?;
+    crop_and_save_cropped_images(&free_tile_sources, texture_cache, tile_objects_dir)?;
 
     for tileset in &tilesets {
         let tsx_path = tilesets_dir.join(format!("{}.tsx", tileset.name));
@@ -219,25 +224,25 @@ fn crop_and_save_textures(
     Ok(())
 }
 
-fn crop_and_save_sprites(
-    sprite_sources: &[convert::SpriteSourceInfo],
+fn crop_and_save_cropped_images(
+    image_sources: &[convert::CroppedImageSourceInfo],
     texture_cache: &mut textures::TexturePageCache,
-    sprites_dir: &Path,
+    output_dir: &Path,
 ) -> anyhow::Result<()> {
-    for spr in sprite_sources {
-        let out_path = sprites_dir.join(format!("{}.png", spr.name));
+    for image_source in image_sources {
+        let out_path = output_dir.join(format!("{}.png", image_source.name));
         if out_path.exists() {
             continue;
         }
         let img = texture_cache.crop(
-            spr.texture_page_index,
-            spr.source_x,
-            spr.source_y,
-            spr.source_width,
-            spr.source_height,
+            image_source.texture_page_index,
+            image_source.source_x,
+            image_source.source_y,
+            image_source.source_width,
+            image_source.source_height,
         )?;
         img.save(&out_path)
-            .with_context(|| format!("Failed to save sprite {out_path:?}"))?;
+            .with_context(|| format!("Failed to save cropped image {out_path:?}"))?;
     }
     Ok(())
 }

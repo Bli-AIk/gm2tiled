@@ -123,14 +123,13 @@ pub fn render_reference_room_static(
 pub fn render_tiled_map_static(
     map: &TiledMap,
     tilesets: &[Tileset],
-    backgrounds: &HashMap<String, BackgroundDef>,
     room_width: u32,
     room_height: u32,
     texture_cache: &mut TexturePageCache,
     region_cache: &mut RegionCache,
 ) -> anyhow::Result<RgbaImage> {
     let mut canvas = new_canvas(room_width, room_height, tiled_background(map));
-    let render_tilesets = build_render_tilesets(map, tilesets, backgrounds)?;
+    let render_tilesets = build_render_tilesets(map, tilesets)?;
 
     for layer in &map.layers {
         match layer {
@@ -224,7 +223,6 @@ struct RenderTileset {
 fn build_render_tilesets(
     map: &TiledMap,
     tilesets: &[Tileset],
-    backgrounds: &HashMap<String, BackgroundDef>,
 ) -> anyhow::Result<Vec<RenderTileset>> {
     let mut first_gid_by_name = HashMap::new();
     for tileset_ref in &map.tilesets {
@@ -234,9 +232,6 @@ fn build_render_tilesets(
 
     let mut render_tilesets = Vec::new();
     for tileset in tilesets {
-        let Some(background) = backgrounds.get(&tileset.name) else {
-            continue;
-        };
         let first_gid = *first_gid_by_name
             .get(tileset.name.as_str())
             .with_context(|| format!("Missing firstgid for tileset '{}'", tileset.name))?;
@@ -244,9 +239,9 @@ fn build_render_tilesets(
         render_tilesets.push(RenderTileset {
             first_gid,
             last_gid,
-            texture_page_index: background.texture_page_index,
-            source_x: background.source_x,
-            source_y: background.source_y,
+            texture_page_index: tileset.source_texture_page_index,
+            source_x: tileset.source_x,
+            source_y: tileset.source_y,
             tile_width: tileset.tile_width.max(1),
             tile_height: tileset.tile_height.max(1),
             columns: tileset.columns.max(1),
