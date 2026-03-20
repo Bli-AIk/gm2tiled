@@ -28,6 +28,8 @@ ai_check.sh
 
 logs/
 dev/
+test_sources/
+test_output/
 
 # System
 .DS_Store

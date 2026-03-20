@@ -87,6 +87,51 @@ File.WriteAllText(
     JsonSerializer.Serialize(bgList, jsonOptions)
 );
 
+// ─── Export sprites ───────────────────────────────────────────────────────────
+
+ScriptMessage($"Exporting {Data.Sprites.Count} sprites...");
+var spriteList = new List<object>();
+foreach (var spr in Data.Sprites)
+{
+    string sprName = spr.Name?.Content ?? "";
+    if (string.IsNullOrWhiteSpace(sprName)) continue;
+    if (spr.Textures == null || spr.Textures.Count == 0) continue;
+
+    var frames = new List<object>();
+    foreach (var sprFrame in spr.Textures)
+    {
+        var tex = sprFrame?.Texture;
+        if (tex == null) continue;
+
+        int pageIndex = Data.EmbeddedTextures.IndexOf(tex.TexturePage);
+        if (pageIndex < 0) continue;
+
+        frames.Add(new
+        {
+            texturePageIndex = pageIndex,
+            sourceX = (int)tex.SourceX,
+            sourceY = (int)tex.SourceY,
+            sourceWidth = (int)tex.SourceWidth,
+            sourceHeight = (int)tex.SourceHeight
+        });
+    }
+
+    if (frames.Count == 0) continue;
+
+    spriteList.Add(new
+    {
+        name = sprName,
+        originX = (int)spr.OriginX,
+        originY = (int)spr.OriginY,
+        frames = frames
+    });
+}
+
+File.WriteAllText(
+    Path.Combine(outDir, "sprites.json"),
+    JsonSerializer.Serialize(spriteList, jsonOptions)
+);
+
 // ─── Export rooms ─────────────────────────────────────────────────────────────
 
 ScriptMessage($"Exporting {Data.Rooms.Count} rooms...");
