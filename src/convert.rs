@@ -252,8 +252,14 @@ fn determine_tile_dims(
     bg_def: &BackgroundDef,
     tile_size: u32,
 ) -> (u32, u32) {
-    // GMS2 backgrounds carry their own tile dimensions.
-    if bg_def.gms2_tile_width > 0 && bg_def.gms2_tile_height > 0 {
+    // Only trust GMS2 tileset dimensions when the room actually uses the
+    // background through a GMS2 tile layer. Some legacy Undertale backgrounds
+    // carry 32x32 metadata even though the room tiles referencing them are 20x20.
+    let used_by_gms2_layer = room
+        .gms2_tile_layers
+        .iter()
+        .any(|layer| layer.background == bg_name);
+    if used_by_gms2_layer && bg_def.gms2_tile_width > 0 && bg_def.gms2_tile_height > 0 {
         return (bg_def.gms2_tile_width, bg_def.gms2_tile_height);
     }
     determine_tile_dims_gms1(bg_name, room, tile_size)
