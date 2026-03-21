@@ -58,8 +58,12 @@ for (int i = 0; i < Data.Backgrounds.Count; i++)
 
 // GMS2 compat: tile tilesets are stored as sprites named "bg_*" (not in Data.Backgrounds)
 var existingBgNames = new HashSet<string>();
-foreach (var entry in bgList) {
-    existingBgNames.Add(((dynamic)entry).name);
+foreach (var bg in Data.Backgrounds)
+{
+    if (bg.Texture != null)
+    {
+        existingBgNames.Add(bg.Name.Content);
+    }
 }
 foreach (var spr in Data.Sprites)
 {
