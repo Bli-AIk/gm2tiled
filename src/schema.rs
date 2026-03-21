@@ -18,6 +18,24 @@ pub struct BackgroundDef {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct SpriteFrameDef {
+    pub texture_page_index: usize,
+    pub source_x: u32,
+    pub source_y: u32,
+    pub source_width: u32,
+    pub source_height: u32,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpriteDef {
+    pub name: String,
+    #[serde(default)]
+    pub frames: Vec<SpriteFrameDef>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RoomData {
     pub width: u32,
     pub height: u32,

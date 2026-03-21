@@ -4,7 +4,7 @@ use std::path::Path;
 
 use anyhow::Context;
 
-use crate::schema::{BackgroundDef, RoomData};
+use crate::schema::{BackgroundDef, RoomData, SpriteDef};
 
 /// Write output dir path to `/tmp/gm2tiled_outdir`, then run utmt.
 pub fn run_utmt(data_win: &Path, extract_dir: &Path, scripts_dir: &Path) -> anyhow::Result<()> {
@@ -41,6 +41,14 @@ pub fn load_backgrounds(extract_dir: &Path) -> anyhow::Result<HashMap<String, Ba
     let list: Vec<BackgroundDef> =
         serde_json::from_str(&content).context("Failed to parse backgrounds.json")?;
     Ok(list.into_iter().map(|b| (b.name.clone(), b)).collect())
+}
+
+/// Load full sprite catalog from extracted JSON.
+pub fn load_sprites(extract_dir: &Path) -> anyhow::Result<Vec<SpriteDef>> {
+    let json_path = extract_dir.join("sprites.json");
+    let content =
+        fs::read_to_string(&json_path).with_context(|| format!("Failed to read {json_path:?}"))?;
+    serde_json::from_str(&content).context("Failed to parse sprites.json")
 }
 
 /// Load a single room from extracted JSON.
