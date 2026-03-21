@@ -37,6 +37,10 @@ The room and tileset structure was also informed by the official GameMaker plugi
 [GMS2 `.yy` plugin](https://github.com/mapeditor/tiled/tree/master/src/plugins/yy) and
 [GMS1 `.gmx` plugin](https://github.com/mapeditor/tiled/tree/master/src/plugins/gmx).
 
+## Tracked Source Version
+
+* **UTMT CLI**: tracked against the official `v0.8.4.1` release
+
 ## Features
 
 * Supports **GMS1** (`data.win` v14, e.g. Undertale) and **GMS2** (`data.win` v17, e.g. Deltarune)
@@ -47,8 +51,8 @@ The room and tileset structure was also informed by the official GameMaker plugi
 * Non-uniform / free-placed tiles → `ObjectGroup` fallback with tile objects
 * GameObjects → `ObjectGroup` with `type` property set to the object name
 * `--skip-extract` flag to reuse previously extracted data (fast iteration)
-* (Planned) Batch conversion: convert all rooms in a `data.win` at once
-* (Planned) GMS2 native `Tiles` layer support (grid-based `uint[][]` tile data)
+* Batch conversion: convert all rooms in a `data.win` at once
+* GMS2 native `Tiles` layer support (grid-based `uint[][]` tile data)
 * (Planned) Deltarune background layer export (runtime-set backgrounds)
 
 ## How to Use
@@ -56,7 +60,7 @@ The room and tileset structure was also informed by the official GameMaker plugi
 ### Prerequisites
 
 * **Rust** 1.85 or later
-* **[UndertaleModTool CLI](https://github.com/UnderminersTeam/UndertaleModTool)** (`utmt`) installed and on your `PATH`
+* **[UndertaleModTool CLI](https://github.com/UnderminersTeam/UndertaleModTool)** (`utmt`) `v0.8.4.1` installed and on your `PATH`
 
 Install Rust if not already installed:
 
@@ -96,14 +100,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 4. **Open in Tiled**:
 
-   Open any `.tmx` file in `./output/rooms/` with [Tiled](https://www.mapeditor.org/).
+   Open any `.tmx` file in `./output/` with [Tiled](https://www.mapeditor.org/).
 
 ## How to Build
 
 ### Prerequisites
 
 * Rust 1.85 or later
-* `utmt` CLI on your `PATH`
+* `utmt` CLI `v0.8.4.1` on your `PATH`
 
 ### Build Steps
 
@@ -136,9 +140,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ```
 output/
-├── rooms/
-│   ├── room_ruins1.tmx
-│   └── room_ruins2.tmx
+├── room_ruins1.tmx
+├── room_ruins2.tmx
 ├── tilesets/
 │   ├── bg_ruinsplaceholder.tsx
 │   └── bg_ruinsplaceholder.png

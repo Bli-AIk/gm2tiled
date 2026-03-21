@@ -3,7 +3,8 @@ mod common;
 use std::collections::HashMap;
 
 use common::{
-    TempDir, background, empty_room, enabled_view, game_object, gms2_layer, rgba, tile, write_png,
+    TempDir, background, background_with_layout, empty_room, enabled_view, game_object, gms2_layer,
+    rgba, tile, write_png,
 };
 use gm2tiled::convert;
 use gm2tiled::model::{Layer, MapObject, TileLayer, TiledMap, Tileset, TilesetRef};
@@ -173,6 +174,86 @@ fn render_pipeline_matches_reference_for_transformed_gms2_tiles() {
 }
 
 #[test]
+fn render_pipeline_matches_reference_for_bordered_gms2_tilesets() {
+    let dir = TempDir::new("render_pipeline_bordered");
+    let textures_dir = dir.path().join("textures");
+    std::fs::create_dir_all(&textures_dir).expect("create textures dir");
+
+    let mut page = RgbaImage::new(8, 4);
+    page.put_pixel(5, 1, rgba(20, 30, 40, 255));
+    page.put_pixel(6, 1, rgba(50, 60, 70, 255));
+    page.put_pixel(5, 2, rgba(80, 90, 100, 255));
+    page.put_pixel(6, 2, rgba(110, 120, 130, 255));
+    write_png(&textures_dir.join("0.png"), &page);
+
+    let backgrounds = HashMap::from([(
+        "bg".to_string(),
+        background_with_layout("bg", 0, 8, 4, 2, 2, 1, 1, 2, 2),
+    )]);
+
+    let mut room = empty_room();
+    room.width = 2;
+    room.height = 2;
+    room.gms2_tile_layers
+        .push(gms2_layer("main", 0, "bg", vec![vec![1]]));
+
+    let mut texture_cache = TexturePageCache::new(&textures_dir);
+    let mut region_cache = render::RegionCache::new();
+    let (reference, _stats) = render::render_reference_room_static(
+        &room,
+        &backgrounds,
+        &mut texture_cache,
+        &mut region_cache,
+    )
+    .expect("render reference");
+    assert_eq!(reference.get_pixel(0, 0), &rgba(20, 30, 40, 255));
+    assert_eq!(reference.get_pixel(1, 0), &rgba(50, 60, 70, 255));
+    assert_eq!(reference.get_pixel(0, 1), &rgba(80, 90, 100, 255));
+    assert_eq!(reference.get_pixel(1, 1), &rgba(110, 120, 130, 255));
+
+    let (map, tilesets, _, _) = convert::convert_room(&room, &backgrounds, 2).expect("convert");
+    let rendered = render::render_tiled_map_static(
+        &map,
+        &tilesets,
+        room.width,
+        room.height,
+        &mut texture_cache,
+        &mut region_cache,
+    )
+    .expect("render tiled");
+    let diff = render::compare_images(&reference, &rendered);
+    assert_eq!(diff.metrics.ae_pixels, 0);
+}
+
+#[test]
+fn convert_room_ignores_stale_gms2_layout_metadata_for_gms1_backgrounds() {
+    let mut room = empty_room();
+    room.width = 20;
+    room.height = 20;
+    room.tiles.push(tile(0, 0, 0, 0, 20, 20, 0, "bg"));
+
+    let backgrounds = HashMap::from([(
+        "bg".to_string(),
+        background_with_layout("bg", 0, 160, 320, 32, 32, 2, 2, 32, 1024),
+    )]);
+
+    let (_map, tilesets, _, _) = convert::convert_room(&room, &backgrounds, 20).expect("convert");
+    let tileset = tilesets
+        .iter()
+        .find(|tileset| tileset.name == "bg")
+        .expect("background tileset");
+
+    assert_eq!(tileset.tile_width, 20);
+    assert_eq!(tileset.tile_height, 20);
+    assert_eq!(tileset.margin_x, 0);
+    assert_eq!(tileset.margin_y, 0);
+    assert_eq!(tileset.spacing_x, 0);
+    assert_eq!(tileset.spacing_y, 0);
+    assert_eq!(tileset.columns, 8);
+    assert_eq!(tileset.tile_count, 128);
+}
+
+#[test]
 fn render_tiled_map_applies_tiled_flip_flags() {
     let dir = TempDir::new("render_tiled_flags");
     let textures_dir = dir.path().join("textures");
@@ -213,6 +294,10 @@ fn render_tiled_map_applies_tiled_flip_flags() {
         image_path: "../textures/0.png".to_string(),
         image_width: 2,
         image_height: 2,
+        margin_x: 0,
+        margin_y: 0,
+        spacing_x: 0,
+        spacing_y: 0,
         columns: 1,
         tile_count: 1,
         source_texture_page_index: 0,

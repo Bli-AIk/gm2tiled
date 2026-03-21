@@ -14,6 +14,14 @@ pub struct BackgroundDef {
     pub gms2_tile_width: u32,
     #[serde(default)]
     pub gms2_tile_height: u32,
+    #[serde(default)]
+    pub gms2_output_border_x: u32,
+    #[serde(default)]
+    pub gms2_output_border_y: u32,
+    #[serde(default)]
+    pub gms2_tile_columns: u32,
+    #[serde(default)]
+    pub gms2_tile_count: u32,
 }
 
 #[derive(Debug, Deserialize)]

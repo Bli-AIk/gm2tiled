@@ -99,6 +99,10 @@ fn write_tsx_emits_expected_tileset_metadata() {
         image_path: "../textures/bg.png".to_string(),
         image_width: 40,
         image_height: 60,
+        margin_x: 2,
+        margin_y: 2,
+        spacing_x: 4,
+        spacing_y: 4,
         columns: 2,
         tile_count: 6,
         source_texture_page_index: 0,
@@ -110,6 +114,6 @@ fn write_tsx_emits_expected_tileset_metadata() {
     tsx::write_tsx(&tileset, &path).expect("write tsx");
     let xml = fs::read_to_string(path).expect("read tsx");
 
-    assert!(xml.contains(r#"<tileset version="1.10" tiledversion="1.10.2" name="bg" tilewidth="20" tileheight="20" tilecount="6" columns="2">"#));
+    assert!(xml.contains(r#"<tileset version="1.10" tiledversion="1.10.2" name="bg" tilewidth="20" tileheight="20" tilecount="6" columns="2" margin="2" spacing="4">"#));
     assert!(xml.contains(r#"<image source="../textures/bg.png" width="40" height="60"/>"#));
 }

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 
-use anyhow::Context;
+use anyhow::{Context, ensure};
 use quick_xml::Writer;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, Event};
 
@@ -20,6 +20,20 @@ pub fn write_tsx(tileset: &Tileset, output_path: &Path) -> anyhow::Result<()> {
     let tile_height = tileset.tile_height.to_string();
     let tile_count = tileset.tile_count.to_string();
     let columns = tileset.columns.to_string();
+    ensure!(
+        tileset.margin_x == tileset.margin_y,
+        "Tileset '{}' uses asymmetric margins (x={}, y={}) which TSX cannot encode",
+        tileset.name,
+        tileset.margin_x,
+        tileset.margin_y
+    );
+    ensure!(
+        tileset.spacing_x == tileset.spacing_y,
+        "Tileset '{}' uses asymmetric spacing (x={}, y={}) which TSX cannot encode",
+        tileset.name,
+        tileset.spacing_x,
+        tileset.spacing_y
+    );
 
     let mut ts = BytesStart::new("tileset");
     ts.push_attribute(("version", "1.10"));
@@ -29,6 +43,14 @@ pub fn write_tsx(tileset: &Tileset, output_path: &Path) -> anyhow::Result<()> {
     ts.push_attribute(("tileheight", tile_height.as_str()));
     ts.push_attribute(("tilecount", tile_count.as_str()));
     ts.push_attribute(("columns", columns.as_str()));
+    let margin = tileset.margin_x.to_string();
+    let spacing = tileset.spacing_x.to_string();
+    if tileset.margin_x > 0 {
+        ts.push_attribute(("margin", margin.as_str()));
+    }
+    if tileset.spacing_x > 0 {
+        ts.push_attribute(("spacing", spacing.as_str()));
+    }
     w.write_event(Event::Start(ts))?;
 
     let img_width = tileset.image_width.to_string();

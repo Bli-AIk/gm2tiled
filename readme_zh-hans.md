@@ -35,6 +35,10 @@ UTMT 是一个开源的 GameMaker 逆向工程工具集。衷心感谢所有 UTM
 [GMS2 `.yy` 插件](https://github.com/mapeditor/tiled/tree/master/src/plugins/yy) 和
 [GMS1 `.gmx` 插件](https://github.com/mapeditor/tiled/tree/master/src/plugins/gmx)。
 
+## 当前追踪的源版本
+
+* **UTMT CLI**：当前按官方 `v0.8.4.1` release 追踪
+
 ## 功能
 
 * 支持 **GMS1**（`data.win` v14，如 Undertale）和 **GMS2**（`data.win` v17，如 Deltarune）
@@ -45,8 +49,8 @@ UTMT 是一个开源的 GameMaker 逆向工程工具集。衷心感谢所有 UTM
 * 非均匀/自由放置的瓦片 → 使用瓦片对象的 `ObjectGroup` 兜底方案
 * 游戏对象 → `ObjectGroup`，`type` 属性设为对象名称
 * `--skip-extract` 参数可复用已提取的数据（快速迭代）
-* （计划中）批量转换：一次性转换 `data.win` 中的所有房间
-* （计划中）GMS2 原生 `Tiles` 层支持（基于网格的 `uint[][]` 瓦片数据）
+* 批量转换：一次性转换 `data.win` 中的所有房间
+* GMS2 原生 `Tiles` 层支持（基于网格的 `uint[][]` 瓦片数据）
 * （计划中）Deltarune 背景层导出（运行时设置的背景）
 
 ## 使用方法
@@ -54,7 +58,7 @@ UTMT 是一个开源的 GameMaker 逆向工程工具集。衷心感谢所有 UTM
 ### 前置条件
 
 * **Rust** 1.85 或更高版本
-* **[UndertaleModTool CLI](https://github.com/UnderminersTeam/UndertaleModTool)**（`utmt`）已安装并在 `PATH` 中
+* **[UndertaleModTool CLI](https://github.com/UnderminersTeam/UndertaleModTool)**（`utmt`）官方 `v0.8.4.1` 已安装并在 `PATH` 中
 
 安装 Rust（如尚未安装）：
 
@@ -94,14 +98,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 4. **在 Tiled 中打开**：
 
-   用 [Tiled](https://www.mapeditor.org/) 打开 `./output/rooms/` 中的任意 `.tmx` 文件。
+   用 [Tiled](https://www.mapeditor.org/) 打开 `./output/` 中的任意 `.tmx` 文件。
 
 ## 构建方法
 
 ### 前置条件
 
 * Rust 1.85 或更高版本
-* `utmt` CLI 在 `PATH` 中
+* `utmt` CLI 官方 `v0.8.4.1` 在 `PATH` 中
 
 ### 构建步骤
 
@@ -134,9 +138,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ```
 output/
-├── rooms/
-│   ├── room_ruins1.tmx
-│   └── room_ruins2.tmx
+├── room_ruins1.tmx
+├── room_ruins2.tmx
 ├── tilesets/
 │   ├── bg_ruinsplaceholder.tsx
 │   └── bg_ruinsplaceholder.png

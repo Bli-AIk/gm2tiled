@@ -14,6 +14,10 @@ struct TilesetInfo {
     first_gid: u32,
     tile_width: u32,
     tile_height: u32,
+    margin_x: u32,
+    margin_y: u32,
+    spacing_x: u32,
+    spacing_y: u32,
     columns: u32,
     tile_count: u32,
     source_width: u32,
@@ -178,6 +182,10 @@ fn build_tileset_lists(
             image_path: format!("../textures/{}.png", info.name),
             image_width: info.source_width,
             image_height: info.source_height,
+            margin_x: info.margin_x,
+            margin_y: info.margin_y,
+            spacing_x: info.spacing_x,
+            spacing_y: info.spacing_y,
             columns: info.columns,
             tile_count: info.tile_count,
             source_texture_page_index: info.texture_page_index,
@@ -198,6 +206,10 @@ fn build_tileset_lists(
             image_path: format!("../tile_objects/{}.png", info.name),
             image_width: info.source_width,
             image_height: info.source_height,
+            margin_x: 0,
+            margin_y: 0,
+            spacing_x: 0,
+            spacing_y: 0,
             columns: 1,
             tile_count: 1,
             source_texture_page_index: info.texture_page_index,
@@ -226,6 +238,10 @@ fn build_tileset_lists(
             image_path: format!("../sprites/{}.png", info.name),
             image_width: info.source_width,
             image_height: info.source_height,
+            margin_x: 0,
+            margin_y: 0,
+            spacing_x: 0,
+            spacing_y: 0,
             columns: 1,
             tile_count: 1,
             source_texture_page_index: info.texture_page_index,
@@ -261,9 +277,40 @@ fn build_tileset_map(
             .with_context(|| format!("Background '{bg_name}' not found in backgrounds.json"))?;
 
         let (tile_w, tile_h) = determine_tile_dims(bg_name, room, bg_def, tile_size);
-        let columns = bg_def.source_width / tile_w.max(1);
-        let rows = bg_def.source_height / tile_h.max(1);
-        let tile_count = columns * rows;
+        let used_by_gms2_layer = room
+            .gms2_tile_layers
+            .iter()
+            .any(|layer| layer.background == *bg_name);
+        let margin_x = if used_by_gms2_layer {
+            bg_def.gms2_output_border_x
+        } else {
+            0
+        };
+        let margin_y = if used_by_gms2_layer {
+            bg_def.gms2_output_border_y
+        } else {
+            0
+        };
+        let spacing_x = if used_by_gms2_layer {
+            bg_def.gms2_output_border_x.saturating_mul(2)
+        } else {
+            0
+        };
+        let spacing_y = if used_by_gms2_layer {
+            bg_def.gms2_output_border_y.saturating_mul(2)
+        } else {
+            0
+        };
+        let columns = if used_by_gms2_layer && bg_def.gms2_tile_columns > 0 {
+            bg_def.gms2_tile_columns
+        } else {
+            (bg_def.source_width / tile_w.max(1)).max(1)
+        };
+        let tile_count = if used_by_gms2_layer && bg_def.gms2_tile_count > 0 {
+            bg_def.gms2_tile_count
+        } else {
+            (columns * bg_def.source_height.div_ceil(tile_h.max(1))).max(1)
+        };
 
         tileset_map.insert(
             bg_name.clone(),
@@ -271,6 +318,10 @@ fn build_tileset_map(
                 first_gid: next_gid,
                 tile_width: tile_w,
                 tile_height: tile_h,
+                margin_x,
+                margin_y,
+                spacing_x,
+                spacing_y,
                 columns,
                 tile_count,
                 source_width: bg_def.source_width,
