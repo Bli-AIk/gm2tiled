@@ -1,12 +1,19 @@
 use std::collections::{HashMap, hash_map::Entry};
 
 use anyhow::Context;
-use image::{Rgba, RgbaImage};
+use image::{Rgba, RgbaImage, imageops};
 use serde::Serialize;
 
 use crate::model::{Layer, MapObject, TiledMap, Tileset};
 use crate::schema::{BackgroundDef, RoomData};
 use crate::textures::TexturePageCache;
+use crate::tile_flags;
+
+const TILED_FLIP_HORIZONTAL_FLAG: u32 = 0x8000_0000;
+const TILED_FLIP_VERTICAL_FLAG: u32 = 0x4000_0000;
+const TILED_FLIP_DIAGONAL_FLAG: u32 = 0x2000_0000;
+const TILED_FLIP_FLAG_MASK: u32 =
+    TILED_FLIP_HORIZONTAL_FLAG | TILED_FLIP_VERTICAL_FLAG | TILED_FLIP_DIAGONAL_FLAG;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct RegionKey {
@@ -19,12 +26,14 @@ struct RegionKey {
 
 pub struct RegionCache {
     regions: HashMap<RegionKey, RgbaImage>,
+    transformed: HashMap<(RegionKey, u32), RgbaImage>,
 }
 
 impl RegionCache {
     pub fn new() -> Self {
         Self {
             regions: HashMap::new(),
+            transformed: HashMap::new(),
         }
     }
 
@@ -46,6 +55,25 @@ impl RegionCache {
             entry.insert(img);
         }
         Ok(&self.regions[&key])
+    }
+
+    fn get_transformed(
+        &mut self,
+        texture_cache: &mut TexturePageCache,
+        key: RegionKey,
+        flags: u32,
+    ) -> anyhow::Result<&RgbaImage> {
+        if flags == 0 {
+            return self.get(texture_cache, key);
+        }
+
+        let transformed_key = (key, flags);
+        if !self.transformed.contains_key(&transformed_key) {
+            let base = self.get(texture_cache, key)?.clone();
+            let transformed = apply_tiled_transform(&base, flags);
+            self.transformed.insert(transformed_key, transformed);
+        }
+        Ok(&self.transformed[&transformed_key])
     }
 }
 
@@ -271,8 +299,9 @@ fn render_gms2_layer(
             if raw == 0 {
                 continue;
             }
-            stats.gms2_flagged_tiles += u64::from(raw & !0x7_FFFF != 0);
-            let tile_idx = raw & 0x7_FFFF;
+            let transform_flags = tile_flags::gms2_raw_to_tiled_transform_flags(raw);
+            stats.gms2_flagged_tiles += u64::from(transform_flags != 0);
+            let tile_idx = tile_flags::gms2_tile_index(raw);
             let src_col = tile_idx % columns;
             let src_row = tile_idx / columns;
             let key = RegionKey {
@@ -282,7 +311,7 @@ fn render_gms2_layer(
                 source_width: tile_width,
                 source_height: tile_height,
             };
-            let region = region_cache.get(texture_cache, key)?;
+            let region = region_cache.get_transformed(texture_cache, key, transform_flags)?;
             alpha_blit(
                 canvas,
                 region,
@@ -308,10 +337,12 @@ fn render_tiled_tile_layer(
         for col in 0..tile_layer.width {
             let idx = (row * tile_layer.width + col) as usize;
             let gid = tile_layer.data[idx];
-            let Some(tileset) = tileset_for_gid(render_tilesets, gid) else {
+            let bare_gid = strip_tiled_flags(gid);
+            let transform_flags = tiled_transform_flags(gid);
+            let Some(tileset) = tileset_for_gid(render_tilesets, bare_gid) else {
                 continue;
             };
-            let local_id = gid - tileset.first_gid;
+            let local_id = bare_gid - tileset.first_gid;
             let src_col = local_id % tileset.columns.max(1);
             let src_row = local_id / tileset.columns.max(1);
             let key = RegionKey {
@@ -321,7 +352,7 @@ fn render_tiled_tile_layer(
                 source_width: tileset.tile_width,
                 source_height: tileset.tile_height,
             };
-            let region = region_cache.get(texture_cache, key)?;
+            let region = region_cache.get_transformed(texture_cache, key, transform_flags)?;
             alpha_blit(
                 canvas,
                 region,
@@ -340,17 +371,19 @@ fn render_tiled_tile_object(
     texture_cache: &mut TexturePageCache,
     region_cache: &mut RegionCache,
 ) -> anyhow::Result<()> {
-    let local_id = tile_object.gid - tileset.first_gid;
+    let bare_gid = strip_tiled_flags(tile_object.gid);
+    let transform_flags = tiled_transform_flags(tile_object.gid);
+    let local_id = bare_gid - tileset.first_gid;
     let src_col = local_id % tileset.columns.max(1);
     let src_row = local_id / tileset.columns.max(1);
     let key = RegionKey {
         texture_page_index: tileset.texture_page_index,
         source_x: tileset.source_x + src_col * tileset.tile_width,
         source_y: tileset.source_y + src_row * tileset.tile_height,
-        source_width: tile_object.width.round() as u32,
-        source_height: tile_object.height.round() as u32,
+        source_width: tileset.tile_width,
+        source_height: tileset.tile_height,
     };
-    let region = region_cache.get(texture_cache, key)?;
+    let region = region_cache.get_transformed(texture_cache, key, transform_flags)?;
     alpha_blit(
         canvas,
         region,
@@ -369,7 +402,8 @@ fn render_tiled_object_layer(
 ) -> anyhow::Result<()> {
     for object in &object_layer.objects {
         if let MapObject::TileObject(tile_object) = object {
-            let Some(tileset) = tileset_for_gid(render_tilesets, tile_object.gid) else {
+            let bare_gid = strip_tiled_flags(tile_object.gid);
+            let Some(tileset) = tileset_for_gid(render_tilesets, bare_gid) else {
                 continue;
             };
             render_tiled_tile_object(canvas, tile_object, tileset, texture_cache, region_cache)?;
@@ -396,6 +430,39 @@ fn tileset_name_from_path(path: &str) -> &str {
 
 fn new_canvas(width: u32, height: u32, background: Rgba<u8>) -> RgbaImage {
     RgbaImage::from_pixel(width, height, background)
+}
+
+fn strip_tiled_flags(gid: u32) -> u32 {
+    gid & !TILED_FLIP_FLAG_MASK
+}
+
+fn tiled_transform_flags(gid: u32) -> u32 {
+    gid & TILED_FLIP_FLAG_MASK
+}
+
+fn apply_tiled_transform(image: &RgbaImage, flags: u32) -> RgbaImage {
+    let mut out = if flags & TILED_FLIP_DIAGONAL_FLAG != 0 {
+        transpose_image(image)
+    } else {
+        image.clone()
+    };
+    if flags & TILED_FLIP_HORIZONTAL_FLAG != 0 {
+        imageops::flip_horizontal_in_place(&mut out);
+    }
+    if flags & TILED_FLIP_VERTICAL_FLAG != 0 {
+        imageops::flip_vertical_in_place(&mut out);
+    }
+    out
+}
+
+fn transpose_image(image: &RgbaImage) -> RgbaImage {
+    let mut out = RgbaImage::new(image.height(), image.width());
+    for y in 0..image.height() {
+        for x in 0..image.width() {
+            out.put_pixel(y, x, *image.get_pixel(x, y));
+        }
+    }
+    out
 }
 
 fn room_background(room: &RoomData) -> Rgba<u8> {

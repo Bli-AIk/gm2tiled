@@ -23,6 +23,8 @@ mod render;
 mod schema;
 #[path = "../textures.rs"]
 mod textures;
+#[path = "../tile_flags.rs"]
+mod tile_flags;
 
 #[derive(Parser)]
 #[command(
@@ -303,9 +305,6 @@ fn determine_status(
     if reference_stats.static_draw_ops == 0 {
         return "NO_STATIC_MAP";
     }
-    if reference_stats.gms2_flagged_tiles > 0 {
-        return "UNSUPPORTED_FLAGS";
-    }
     if !metrics.size_match {
         return "FAIL_SIZE";
     }
@@ -331,10 +330,7 @@ fn build_notes(reference_stats: &render::ReferenceStats) -> String {
         ));
     }
     if reference_stats.gms2_flagged_tiles > 0 {
-        notes.push(format!(
-            "gms2_flags_ignored={}",
-            reference_stats.gms2_flagged_tiles
-        ));
+        notes.push(format!("gms2_flags={}", reference_stats.gms2_flagged_tiles));
     }
     if reference_stats.static_draw_ops == 0 {
         notes.push("no_static_tiles".to_string());

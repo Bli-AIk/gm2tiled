@@ -7,6 +7,7 @@ use crate::model::{
     TilesetRef, ViewObject,
 };
 use crate::schema::{BackgroundDef, Gms2TileLayer, RoomData, TileData};
+use crate::tile_flags;
 
 #[path = "convert_detection.rs"]
 mod detection;
@@ -673,8 +674,7 @@ fn build_gms2_tile_layer(
             if raw == 0 {
                 continue;
             }
-            let tile_idx = raw & 0x7_FFFF;
-            let gid = info.first_gid + tile_idx;
+            let gid = tile_flags::gms2_raw_to_tiled_gid(raw, info.first_gid);
             let pos = row_idx as u32 * w + col_idx as u32;
             if (pos as usize) < data.len() {
                 data[pos as usize] = gid;
@@ -707,8 +707,7 @@ fn build_gms2_object_layer(
                 continue;
             }
 
-            let tile_idx = raw & 0x7_FFFF;
-            let gid = info.first_gid + tile_idx;
+            let gid = tile_flags::gms2_raw_to_tiled_gid(raw, info.first_gid);
             let id = *obj_id;
             *obj_id += 1;
             objects.push(MapObject::TileObject(TileObjectData {

@@ -10,6 +10,7 @@ mod extract;
 mod model;
 mod schema;
 mod textures;
+mod tile_flags;
 
 #[derive(Parser)]
 #[command(name = "gm2tiled", about = "Convert GameMaker data.win to Tiled .tmx")]
