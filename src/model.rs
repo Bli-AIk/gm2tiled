@@ -80,6 +80,10 @@ pub struct Tileset {
     pub image_path: String,
     pub image_width: u32,
     pub image_height: u32,
+    pub margin_x: u32,
+    pub margin_y: u32,
+    pub spacing_x: u32,
+    pub spacing_y: u32,
     pub columns: u32,
     pub tile_count: u32,
     #[allow(dead_code)]

@@ -52,7 +52,11 @@ for (int i = 0; i < Data.Backgrounds.Count; i++)
         sourceWidth = (int)bg.Texture.SourceWidth,
         sourceHeight = (int)bg.Texture.SourceHeight,
         gms2TileWidth = (int)bg.GMS2TileWidth,
-        gms2TileHeight = (int)bg.GMS2TileHeight
+        gms2TileHeight = (int)bg.GMS2TileHeight,
+        gms2OutputBorderX = (int)bg.GMS2OutputBorderX,
+        gms2OutputBorderY = (int)bg.GMS2OutputBorderY,
+        gms2TileColumns = (int)bg.GMS2TileColumns,
+        gms2TileCount = (int)bg.GMS2TileCount
     });
 }
 

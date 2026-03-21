@@ -55,6 +55,32 @@ pub fn background(
     gms2_tile_width: u32,
     gms2_tile_height: u32,
 ) -> BackgroundDef {
+    background_with_layout(
+        name,
+        texture_page_index,
+        source_width,
+        source_height,
+        gms2_tile_width,
+        gms2_tile_height,
+        0,
+        0,
+        0,
+        0,
+    )
+}
+
+pub fn background_with_layout(
+    name: &str,
+    texture_page_index: usize,
+    source_width: u32,
+    source_height: u32,
+    gms2_tile_width: u32,
+    gms2_tile_height: u32,
+    gms2_output_border_x: u32,
+    gms2_output_border_y: u32,
+    gms2_tile_columns: u32,
+    gms2_tile_count: u32,
+) -> BackgroundDef {
     BackgroundDef {
         name: name.to_string(),
         texture_page_index,
@@ -64,6 +90,10 @@ pub fn background(
         source_height,
         gms2_tile_width,
         gms2_tile_height,
+        gms2_output_border_x,
+        gms2_output_border_y,
+        gms2_tile_columns,
+        gms2_tile_count,
     }
 }
 

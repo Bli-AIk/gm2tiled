@@ -251,6 +251,10 @@ struct RenderTileset {
     source_y: u32,
     tile_width: u32,
     tile_height: u32,
+    margin_x: u32,
+    margin_y: u32,
+    spacing_x: u32,
+    spacing_y: u32,
     columns: u32,
 }
 
@@ -278,6 +282,10 @@ fn build_render_tilesets(
             source_y: tileset.source_y,
             tile_width: tileset.tile_width.max(1),
             tile_height: tileset.tile_height.max(1),
+            margin_x: tileset.margin_x,
+            margin_y: tileset.margin_y,
+            spacing_x: tileset.spacing_x,
+            spacing_y: tileset.spacing_y,
             columns: tileset.columns.max(1),
         });
     }
@@ -295,7 +303,15 @@ fn render_gms2_layer(
 ) -> anyhow::Result<()> {
     let tile_width = background.gms2_tile_width.max(1);
     let tile_height = background.gms2_tile_height.max(1);
-    let columns = background.source_width / tile_width;
+    let columns = if background.gms2_tile_columns > 0 {
+        background.gms2_tile_columns
+    } else {
+        (background.source_width / tile_width).max(1)
+    };
+    let margin_x = background.gms2_output_border_x;
+    let margin_y = background.gms2_output_border_y;
+    let spacing_x = background.gms2_output_border_x.saturating_mul(2);
+    let spacing_y = background.gms2_output_border_y.saturating_mul(2);
     if columns == 0 {
         return Ok(());
     }
@@ -312,8 +328,8 @@ fn render_gms2_layer(
             let src_row = tile_idx / columns;
             let key = RegionKey {
                 texture_page_index: background.texture_page_index,
-                source_x: background.source_x + src_col * tile_width,
-                source_y: background.source_y + src_row * tile_height,
+                source_x: background.source_x + margin_x + src_col * (tile_width + spacing_x),
+                source_y: background.source_y + margin_y + src_row * (tile_height + spacing_y),
                 source_width: tile_width,
                 source_height: tile_height,
             };
@@ -353,8 +369,12 @@ fn render_tiled_tile_layer(
             let src_row = local_id / tileset.columns.max(1);
             let key = RegionKey {
                 texture_page_index: tileset.texture_page_index,
-                source_x: tileset.source_x + src_col * tileset.tile_width,
-                source_y: tileset.source_y + src_row * tileset.tile_height,
+                source_x: tileset.source_x
+                    + tileset.margin_x
+                    + src_col * (tileset.tile_width + tileset.spacing_x),
+                source_y: tileset.source_y
+                    + tileset.margin_y
+                    + src_row * (tileset.tile_height + tileset.spacing_y),
                 source_width: tileset.tile_width,
                 source_height: tileset.tile_height,
             };
@@ -384,8 +404,12 @@ fn render_tiled_tile_object(
     let src_row = local_id / tileset.columns.max(1);
     let key = RegionKey {
         texture_page_index: tileset.texture_page_index,
-        source_x: tileset.source_x + src_col * tileset.tile_width,
-        source_y: tileset.source_y + src_row * tileset.tile_height,
+        source_x: tileset.source_x
+            + tileset.margin_x
+            + src_col * (tileset.tile_width + tileset.spacing_x),
+        source_y: tileset.source_y
+            + tileset.margin_y
+            + src_row * (tileset.tile_height + tileset.spacing_y),
         source_width: tileset.tile_width,
         source_height: tileset.tile_height,
     };
