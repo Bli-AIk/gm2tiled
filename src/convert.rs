@@ -2,17 +2,13 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 
+pub use crate::convert_detection::detect_room_tile_size;
 use crate::model::{
     InstanceObject, Layer, MapObject, ObjectLayer, TileLayer, TileObjectData, TiledMap, Tileset,
     TilesetRef, ViewObject,
 };
 use crate::schema::{BackgroundDef, Gms2TileLayer, RoomData, TileData};
 use crate::tile_flags;
-
-#[path = "convert_detection.rs"]
-mod detection;
-
-pub use detection::detect_room_tile_size;
 
 struct TilesetInfo {
     first_gid: u32,

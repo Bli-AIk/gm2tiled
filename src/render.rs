@@ -29,6 +29,12 @@ pub struct RegionCache {
     transformed: HashMap<(RegionKey, u32), RgbaImage>,
 }
 
+impl Default for RegionCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RegionCache {
     pub fn new() -> Self {
         Self {

@@ -5,26 +5,8 @@ use std::process::Command;
 
 use anyhow::Context;
 use clap::Parser;
+use gm2tiled::{convert, extract, render, schema, textures};
 use serde::Serialize;
-
-#[allow(dead_code)]
-#[path = "../convert.rs"]
-mod convert;
-#[allow(dead_code)]
-#[path = "../extract.rs"]
-mod extract;
-#[allow(dead_code)]
-#[path = "../model.rs"]
-mod model;
-#[path = "../render.rs"]
-mod render;
-#[allow(dead_code)]
-#[path = "../schema.rs"]
-mod schema;
-#[path = "../textures.rs"]
-mod textures;
-#[path = "../tile_flags.rs"]
-mod tile_flags;
 
 #[derive(Parser)]
 #[command(

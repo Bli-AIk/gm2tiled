@@ -3,14 +3,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use clap::Parser;
-
-mod convert;
-mod export;
-mod extract;
-mod model;
-mod schema;
-mod textures;
-mod tile_flags;
+use gm2tiled::{convert, export, extract, schema, textures};
 
 #[derive(Parser)]
 #[command(name = "gm2tiled", about = "Convert GameMaker data.win to Tiled .tmx")]
