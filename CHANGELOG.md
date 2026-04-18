@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/Bli-AIk/gm2tiled/compare/v0.1.2...v0.2.0) - 2026-04-18
+
+### Fixed
+
+- *(extract)* support official utmt 0.8.4.1 ([#11](https://github.com/Bli-AIk/gm2tiled/pull/11))
+
 ## [0.1.2](https://github.com/Bli-AIk/gm2tiled/compare/v0.1.1...v0.1.2) - 2026-03-21
 
 ### Added
